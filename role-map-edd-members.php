@@ -9,17 +9,17 @@
  */
 
 // Validate the membership.
-add_action( 'init', 'th_edd_validate_membership', 95 );
+add_action( 'init', 'role_map_edd_validate_membership', 95 );
 
 // Add EDD extension settings.
-add_filter( 'edd_settings_extensions', 'th_edd_settings_extensions' );
+add_filter( 'edd_settings_extensions', 'role_map_edd_settings_extensions' );
 
 // Set the user role on purchase completion.
-add_action( 'edd_complete_purchase', 'th_edd_complete_purchase' );
+add_action( 'edd_complete_purchase', 'role_map_edd_complete_purchase' );
 
 // Custom role price options.
-add_action( 'edd_download_price_table_head', 'th_edd_members_prices_header',     801    );
-add_action( 'edd_download_price_table_row',  'th_edd_members_price_option_role', 801, 3 );
+add_action( 'edd_download_price_table_head', 'role_map_edd_prices_header',     801    );
+add_action( 'edd_download_price_table_row',  'role_map_edd_price_option_role', 801, 3 );
 
 /**
  * Gets an array of allowed membership roles.
@@ -29,8 +29,8 @@ add_action( 'edd_download_price_table_row',  'th_edd_members_price_option_role',
  * @access public
  * @return array
  */
-function th_edd_get_membership_roles() {
-	$roles = edd_get_option( 'th_edd_membership_roles', false );
+function role_map_edd_get_membership_roles() {
+	$roles = edd_get_option( 'role_map_edd_roles', false );
 
 	return $roles ? array_keys( $roles ) : array( get_option( 'default_role' ) );
 }
@@ -42,12 +42,12 @@ function th_edd_get_membership_roles() {
  * @access public
  * @return array
  */
-function th_edd_get_membership_role_names() {
+function role_map_edd_get_membership_role_names() {
 	global $wp_roles;
 
 	$names = array();
 
-	foreach ( th_edd_get_membership_roles() as $role ) {
+	foreach ( role_map_edd_get_membership_roles() as $role ) {
 
 		if ( isset( $wp_roles->role_names[ $role ] ) )
 			$names[ $role ] = $wp_roles->role_names[ $role ];
@@ -64,7 +64,7 @@ function th_edd_get_membership_role_names() {
  * @access public
  * @return void
  */
-function th_edd_validate_membership() {
+function role_map_edd_validate_membership() {
 
 	// Bail if user is not logged in.
 	if ( ! is_user_logged_in() )
@@ -74,14 +74,14 @@ function th_edd_validate_membership() {
 	$user_id = get_current_user_id();
 
 	// Bail if the user doesn't have a membership role or if the membership is valid.
-	if ( ! th_edd_user_has_membership_role( $user_id ) || edd_members_is_membership_valid( $user_id ) )
+	if ( ! role_map_edd_user_has_membership_role( $user_id ) || edd_members_is_membership_valid( $user_id ) )
 		return;
 
 	// Get the user object.
 	$user = new WP_User( $user_id );
 
 	// Loop through the roles to remove.
-	foreach ( th_edd_get_membership_roles() as $r ) {
+	foreach ( role_map_edd_get_membership_roles() as $r ) {
 
 		// If the user has the role, remove it.
 		if ( in_array( $r, (array) $user->roles ) )
@@ -100,13 +100,13 @@ function th_edd_validate_membership() {
  * @param  int     $user_id
  * @return bool
  */
-function th_edd_user_has_membership_role( $user_id ) {
+function role_map_edd_user_has_membership_role( $user_id ) {
 
 	// Get the user object.
 	$user = new WP_User( $user_id );
 
 	// Loop through the roles to remove.
-	foreach ( th_edd_get_membership_roles() as $r ) {
+	foreach ( role_map_edd_get_membership_roles() as $r ) {
 
 		if ( in_array( $r, (array) $user->roles ) )
 			return true;
@@ -123,7 +123,7 @@ function th_edd_user_has_membership_role( $user_id ) {
  * @param  int     $download_id
  * @return void
  */
-function th_edd_members_prices_header( $download_id ) {
+function role_map_edd_prices_header( $download_id ) {
 
 	if ( 'bundle' == edd_get_download_type( $download_id ) )
 		return;
@@ -132,7 +132,7 @@ function th_edd_members_prices_header( $download_id ) {
 	$edd_members_length_enabled = get_post_meta( $download_id, '_edd_members_length_enabled', true ) ? true : false;
 	$edd_members_display   	    = $edd_members_length_enabled ? '' : ' style="display:none;"'; ?>
 
-	<th <?php echo $edd_members_display; ?> class="edd-members-toggled-hide"><?php esc_html_e( 'Role', 'edd-members' ); ?></th>
+	<th <?php echo $edd_members_display; ?> class="edd-members-toggled-hide"><?php esc_html_e( 'Role', 'role-map-edd-members' ); ?></th>
 
 <?php }
 
@@ -146,13 +146,13 @@ function th_edd_members_prices_header( $download_id ) {
  * @param  array   $args
  * @return bool
  */
-function th_edd_members_price_option_role( $download_id, $price_id, $args ) {
+function role_map_edd_price_option_role( $download_id, $price_id, $args ) {
 
 	if ( 'bundle' == edd_get_download_type( $download_id ) )
 		return;
 
 	// Get price role value.
-	$th_edd_role = th_edd_get_price_option_role( $download_id, $price_id );
+	$role_map_edd_role = role_map_edd_get_price_option_role( $download_id, $price_id );
 
 	// Get membership length enabled for deciding when to show membership length option
 	$edd_members_length_enabled = get_post_meta( $download_id, '_edd_members_length_enabled', true ) ? true : false;
@@ -160,11 +160,11 @@ function th_edd_members_price_option_role( $download_id, $price_id, $args ) {
 
 	<td <?php echo $edd_members_display; ?> class="edd-members-toggled-hide">
 
-		<select name="edd_variable_prices[<?php echo $price_id; ?>][th_edd_role]" id="edd_variable_prices[<?php echo $price_id; ?>][th_edd_role]">
+		<select name="edd_variable_prices[<?php echo $price_id; ?>][role_map_edd_role]" id="edd_variable_prices[<?php echo $price_id; ?>][role_map_edd_role]">
 
-		<?php foreach ( th_edd_get_membership_role_names() as $role => $name ) : ?>
+		<?php foreach ( role_map_edd_get_membership_role_names() as $role => $name ) : ?>
 
-			<option value="<?php echo esc_attr( $role ); ?>" <?php selected( $role, $th_edd_role ); ?>><?php echo esc_html( $name ); ?></option>
+			<option value="<?php echo esc_attr( $role ); ?>" <?php selected( $role, $role_map_edd_role ); ?>><?php echo esc_html( $name ); ?></option>
 
 		<?php endforeach; ?>
 
@@ -181,12 +181,12 @@ function th_edd_members_price_option_role( $download_id, $price_id, $args ) {
  * @param  int     $price_id
  * @return string|bool
  */
-function th_edd_get_price_option_role( $download_id = 0, $price_id = null ) {
+function role_map_edd_get_price_option_role( $download_id = 0, $price_id = null ) {
 
 	$prices = edd_get_variable_prices( $download_id );
 
-	if ( isset( $prices[ $price_id ][ 'th_edd_role' ] ) )
-		return esc_attr( $prices[ $price_id ][ 'th_edd_role' ] );
+	if ( isset( $prices[ $price_id ][ 'role_map_edd_role' ] ) )
+		return esc_attr( $prices[ $price_id ][ 'role_map_edd_role' ] );
 
 	return false;
 }
@@ -199,7 +199,7 @@ function th_edd_get_price_option_role( $download_id = 0, $price_id = null ) {
  * @param  int     $payment_id
  * @return bool
  */
-function th_edd_complete_purchase( $payment_id = 0 ) {
+function role_map_edd_complete_purchase( $payment_id = 0 ) {
 
 	// User info
 	$user_info = edd_get_payment_meta_user_info( $payment_id );
@@ -223,10 +223,11 @@ function th_edd_complete_purchase( $payment_id = 0 ) {
 		if ( ! get_post_meta( $download['id'], '_edd_members_length_enabled', true ) )
 			continue;
 
-		// Get price id
+		// Get price id.
 		$price_id = edd_get_cart_item_price_id( $download );
 
-		$roles[] = th_edd_get_price_option_role( $download['id'], $price_id );
+		// Get the price option role.
+		$roles[] = role_map_edd_get_price_option_role( $download['id'], $price_id );
 	}
 
 	// If we have roles.
@@ -234,7 +235,7 @@ function th_edd_complete_purchase( $payment_id = 0 ) {
 
 		// Note: We're currently grabbing the first role.  We need to add a check to
 		// get the highest priced role in case someone purchases multiple.
-		th_edd_set_user_role( $user_id, array_shift( $roles ) );
+		role_map_edd_set_user_role( $user_id, array_shift( $roles ) );
 	}
 }
 
@@ -247,9 +248,9 @@ function th_edd_complete_purchase( $payment_id = 0 ) {
  * @param  string  $role
  * @return void
  */
-function th_edd_set_user_role( $user_id, $role ) {
+function role_map_edd_set_user_role( $user_id, $role ) {
 
-	$allowed = th_edd_get_membership_role_names();
+	$allowed = role_map_edd_get_membership_role_names();
 
 	// If not an allowed role, bail.
 	if ( ! isset( $allowed[ $role ] ) )
@@ -281,16 +282,16 @@ function th_edd_set_user_role( $user_id, $role ) {
  * @global object  $wp_roles
  * @return array
  */
-function th_edd_settings_extensions( $settings ) {
+function role_map_edd_settings_extensions( $settings ) {
 	global $wp_roles;
 
 	$roles = $wp_roles->role_names;
 	asort( $roles );
 
 	$settings[] = array(
-		'id'      => 'th_edd_membership_roles',
-		'name'    => esc_html__( 'Membership Roles', 'th-edd' ),
-		'desc'    => esc_html__( 'Select which roles can be mapped to EDD Members pricing options.', 'th-edd' ),
+		'id'      => 'role_map_edd_roles',
+		'name'    => esc_html__( 'Membership Roles', 'role-map-edd-members' ),
+		'desc'    => esc_html__( 'Select which roles can be mapped to EDD Members pricing options.', 'role-map-edd-members' ),
 		'type'    => 'multicheck',
 		'options' => $roles
 	);
