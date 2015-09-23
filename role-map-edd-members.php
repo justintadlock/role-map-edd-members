@@ -8,22 +8,6 @@
  * Author URI:  http://justintadlock.com
  */
 
-/* === TH.com-only stuff === */
-
-// Don't show private content meta box.
-add_filter( 'edd_members_when_to_show_metaboxes', '__return_empty_array' );
-
-// Never private content.
-add_filter( 'edd_members_is_private_content', '__return_false' );
-
-// Remove some filters.
-remove_filter( 'the_content',       'edd_members_private_content',  99 );
-remove_filter( 'the_content_feed',  'edd_members_private_content',  99 );
-remove_filter( 'comment_text_rss',  'edd_members_private_content',  99 );
-remove_filter( 'comments_template', 'edd_members_private_comments',  4 );
-
-/* === End TH.com-only stuff === */
-
 // Validate the membership.
 add_action( 'init', 'th_edd_validate_membership', 95 );
 
