@@ -88,8 +88,12 @@ function role_map_edd_validate_membership() {
 			$user->remove_role( $r );
 	}
 
+	// Get the default role.
+	$default_role = get_option( 'default_role' );
+
 	// Add the default role to the user.
-	$user->add_role( get_option( 'default_role' ) );
+	if ( ! in_array( $default_role, (array) $user->roles ) )
+		$user->add_role( $default_role );
 }
 
 /**
